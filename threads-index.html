@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THREADS 索引卡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood-900:#6b4a3a;
+    --wood-800:#7c5a45;
+    --wood-700:#fff3d9;
+    --wood-600:#a9836a;
+    --card-100:#fffdf8;
+    --card-200:#fff3e0;
+    --card-shadow:#ffd9b3;
+    --ink-900:#6b4a3a;
+    --ink-600:#a9836a;
+    --stamp-red:#ff7a5c;
+    --stamp-red-dark:#e8592f;
+    --tab-teal:#5fb894;
+    --tab-teal-dark:#3f9877;
+    --brass:#ffcf4d;
+    --brass-light:#ffe08a;
+    --pink:#ff8fab;
+    font-family:'Noto Sans TC', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle 5px at 8% 12%, rgba(255,143,171,0.35) 98%, transparent) ,
+      radial-gradient(circle 4px at 22% 38%, rgba(95,184,148,0.3) 98%, transparent),
+      radial-gradient(circle 6px at 92% 18%, rgba(255,207,77,0.4) 98%, transparent),
+      radial-gradient(circle 4px at 78% 55%, rgba(255,122,92,0.28) 98%, transparent),
+      radial-gradient(circle 5px at 40% 82%, rgba(95,184,148,0.28) 98%, transparent),
+      radial-gradient(circle 4px at 65% 90%, rgba(255,143,171,0.3) 98%, transparent),
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(255,224,138,0.65), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, rgba(255,122,92,0.15), transparent 55%),
+      linear-gradient(180deg, #fffaf1 0%, #ffedd3 100%);
+    color:var(--ink-900);
+    min-height:100vh;
+    padding:32px 16px 80px;
+  }
+  .wrap{max-width:920px;margin:0 auto;}
+
+  /* ---------- Header: cute welcome badge ---------- */
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  .label-plate{
+    background:linear-gradient(150deg, var(--brass-light), var(--brass));
+    border-radius:24px;
+    padding:14px 26px;
+    box-shadow: 0 4px 0 rgba(232,178,20,0.55), 0 8px 18px rgba(255,180,60,0.25);
+    position:relative;
+  }
+  .label-plate::before{
+    content:'✨';
+    position:absolute;
+    top:-10px; right:14px;
+    font-size:18px;
+  }
+  .label-plate h1{
+    font-family:'Baloo 2', 'Noto Serif TC', serif;
+    font-weight:800;
+    font-size:clamp(22px, 4vw, 30px);
+    letter-spacing:0.02em;
+    margin:0;
+    color:var(--wood-900);
+  }
+  .label-plate p{
+    margin:3px 0 0;
+    font-size:13px;
+    color:var(--wood-800);
+    letter-spacing:0.02em;
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:500;
+  }
+  .count-tag{
+    font-family:'Baloo 2', 'Noto Sans TC', sans-serif;
+    font-size:13px;
+    color:var(--ink-600);
+    opacity:0.9;
+    letter-spacing:0.02em;
+    padding-bottom:6px;
+    font-weight:700;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  .search-slot{
+    flex:1 1 240px;
+    position:relative;
+    background:var(--card-200);
+    border:2px solid var(--brass);
+    border-radius:999px;
+    padding:2px;
+  }
+  .search-slot input{
+    width:100%;
+    background:var(--card-100);
+    border:none;
+    border-radius:999px;
+    padding:11px 18px;
+    font-size:14px;
+    font-family:'Noto Sans TC', sans-serif;
+    color:var(--ink-900);
+    outline:none;
+  }
+  .search-slot input::placeholder{color:var(--ink-600); opacity:0.75;}
+  .add-btn{
+    background:var(--stamp-red);
+    color:#fffaf3;
+    border:none;
+    border-radius:999px;
+    padding:12px 22px;
+    font-size:14px;
+    font-weight:700;
+    font-family:'Noto Sans TC', sans-serif;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    box-shadow:0 3px 0 var(--stamp-red-dark);
+    transition:transform 0.08s ease;
+  }
+  .add-btn:hover{filter:brightness(1.06); transform:translateY(-1px);}
+  .add-btn:active{transform:translateY(2px); box-shadow:0 0 0 var(--stamp-red-dark);}
+
+  /* ---------- Tag guide tabs ---------- */
+  .tabs{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:22px;
+  }
+  .tab{
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    padding:7px 15px;
+    background:var(--card-100);
+    color:var(--tab-teal-dark);
+    border:2px solid var(--tab-teal);
+    border-radius:999px;
+    cursor:pointer;
+    opacity:0.85;
+    letter-spacing:0.01em;
+  }
+  .tab.active{
+    opacity:1;
+    background:var(--tab-teal);
+    color:#fffaf3;
+    box-shadow:0 2px 0 var(--tab-teal-dark);
+  }
+  .tab:hover{opacity:1;}
+
+  /* ---------- Card grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+    gap:20px;
+  }
+  .card{
+    background:
+      linear-gradient(180deg, var(--card-100), var(--card-200));
+    border-radius:20px;
+    padding:22px 18px 18px;
+    position:relative;
+    box-shadow:0 4px 0 var(--card-shadow), 0 10px 20px rgba(255,150,90,0.18);
+    min-height:150px;
+    display:flex;
+    flex-direction:column;
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+    overflow:hidden;
+  }
+  .card:hover{
+    transform:translateY(-4px) rotate(-0.5deg);
+    box-shadow:0 8px 0 var(--card-shadow), 0 16px 24px rgba(255,150,90,0.24);
+  }
+  .card::before{ /* washi tape */
+    content:'';
+    position:absolute;
+    left:50%; top:-6px;
+    width:64px; height:22px;
+    background:var(--pink);
+    opacity:0.85;
+    border-radius:3px;
+    transform:translateX(-50%) rotate(-3deg);
+    box-shadow:0 2px 4px rgba(0,0,0,0.08);
+  }
+  .card::after{ /* dashed rule under top */
+    content:'';
+    position:absolute;
+    left:18px; right:18px; top:46px;
+    border-top:2px dashed var(--card-shadow);
+  }
+  .card-idx{
+    font-family:'Baloo 2', 'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size:11.5px;
+    color:var(--ink-600);
+    opacity:0.75;
+    margin:6px 0 14px;
+  }
+  .card-excerpt{
+    font-size:14.5px;
+    line-height:1.65;
+    color:var(--ink-900);
+    flex:1;
+    margin:0 0 14px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    font-weight:500;
+  }
+  .card-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:12px;
+  }
+  .card-tags span{
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size:10.5px;
+    background:var(--tab-teal);
+    color:#fffaf3;
+    padding:3px 10px;
+    border-radius:999px;
+    opacity:0.9;
+  }
+  .card-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+  }
+  .stamp{
+    font-family:'Baloo 2', 'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size:11.5px;
+    color:#fffaf3;
+    background:var(--stamp-red);
+    border-radius:999px;
+    padding:4px 11px;
+    letter-spacing:0.01em;
+    white-space:nowrap;
+    box-shadow:0 2px 0 var(--stamp-red-dark);
+  }
+  .card-actions{
+    display:flex;
+    gap:6px;
+    opacity:0;
+    transition:opacity 0.12s ease;
+  }
+  .card:hover .card-actions{opacity:1;}
+  .card-actions button{
+    background:var(--card-100);
+    border:1.5px solid var(--ink-600);
+    color:var(--ink-600);
+    font-size:11px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:999px;
+    cursor:pointer;
+    font-family:'Noto Sans TC', sans-serif;
+  }
+  .card-actions button:hover{background:var(--ink-600); color:var(--card-100);}
+
+  /* ---------- Empty state ---------- */
+  .empty{
+    grid-column:1/-1;
+    text-align:center;
+    padding:60px 20px;
+    color:var(--ink-600);
+    opacity:0.85;
+  }
+  .empty h2{
+    font-family:'Baloo 2', 'Noto Serif TC', serif;
+    font-size:20px;
+    margin-bottom:8px;
+    font-weight:800;
+    color:var(--ink-900);
+  }
+  .empty p{font-size:13.5px; font-family:'Noto Sans TC', sans-serif;}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(107,74,58,0.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--card-100);
+    width:100%;
+    max-width:460px;
+    border-radius:24px;
+    padding:28px 26px 24px;
+    box-shadow:0 16px 40px rgba(107,74,58,0.35);
+    position:relative;
+  }
+  .modal h3{
+    font-family:'Baloo 2', 'Noto Serif TC', serif;
+    font-size:19px;
+    font-weight:800;
+    margin:0 0 16px;
+    color:var(--wood-900);
+    border-bottom:2px dashed var(--card-shadow);
+    padding-bottom:12px;
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:700;
+    color:var(--ink-600);
+    margin-bottom:6px;
+  }
+  .field textarea, .field input{
+    width:100%;
+    border:2px solid var(--card-shadow);
+    background:#fffdf7;
+    border-radius:14px;
+    padding:10px 14px;
+    font-size:14px;
+    font-family:'Noto Sans TC', sans-serif;
+    color:var(--ink-900);
+    outline:none;
+  }
+  .field textarea{resize:vertical; min-height:70px; border-radius:16px;}
+  .field input:focus, .field textarea:focus{border-color:var(--stamp-red);}
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:18px;
+  }
+  .btn-ghost{
+    background:none;
+    border:2px solid var(--ink-600);
+    color:var(--ink-600);
+    padding:9px 18px;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:700;
+    font-family:'Noto Sans TC', sans-serif;
+  }
+  .btn-solid{
+    background:var(--stamp-red);
+    color:#fffaf3;
+    border:none;
+    padding:9px 20px;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:700;
+    font-family:'Noto Sans TC', sans-serif;
+    box-shadow:0 2px 0 var(--stamp-red-dark);
+  }
+  .close-x{
+    position:absolute;
+    top:16px; right:18px;
+    background:var(--card-200);
+    border:none;
+    width:28px; height:28px;
+    border-radius:50%;
+    font-size:15px;
+    color:var(--ink-600);
+    cursor:pointer;
+  }
+  .hint{font-size:12px; color:var(--ink-600); opacity:0.85; margin-top:16px; text-align:center; font-family:'Noto Sans TC', sans-serif;}
+
+  /* ---------- Visitor vs owner mode ---------- */
+  .add-btn, .card-actions{ display:none; }
+  body.admin-mode .add-btn{ display:inline-block; }
+  body.admin-mode .card-actions{ display:flex; }
+  .import-btn{
+    background:var(--tab-teal) !important;
+    box-shadow:0 3px 0 var(--tab-teal-dark) !important;
+  }
+  .import-btn:active{ box-shadow:0 0 0 var(--tab-teal-dark) !important; }
+  .admin-banner{
+    display:none;
+    max-width:920px;
+    margin:0 auto 14px;
+    background:var(--stamp-red);
+    color:#fffaf3;
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    padding:9px 16px;
+    border-radius:999px;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  body.admin-mode .admin-banner{ display:flex; }
+  .admin-banner button{
+    background:none;
+    border:1.5px solid #fffaf3;
+    color:#fffaf3;
+    padding:4px 12px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:'Noto Sans TC', sans-serif;
+  }
+  .admin-link{
+    display:block;
+    text-align:center;
+    margin-top:6px;
+    font-size:12px;
+    color:var(--ink-600);
+    opacity:0.5;
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-family:'Noto Sans TC', sans-serif;
+    width:100%;
+  }
+  .admin-link:hover{opacity:0.8;}
+  body.admin-mode .admin-link{ display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="label-plate">
+      <h1>📚 THREADS 索引卡</h1>
+      <p>@bookish_knowhub 文章查詢台</p>
+    </div>
+    <div class="count-tag" id="countTag">共 0 篇文章</div>
+  </header>
+
+  <div class="admin-banner">
+    <span>🔓 管理者模式已開啟，訪客不會看到新增/編輯按鈕</span>
+    <button id="adminLogout">登出管理模式</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-slot">
+      <input id="searchInput" type="text" placeholder="搜尋文章內容或標籤…">
+    </div>
+    <button class="add-btn" id="openAdd">＋ 新增文章</button>
+    <button class="add-btn import-btn" id="openImport">⇪ 批次匯入</button>
+  </div>
+
+  <div class="tabs" id="tabRow"></div>
+
+  <div class="grid" id="grid"></div>
+
+  <p class="hint">來看看有沒有你想找的文章 — 用上面的搜尋框或標籤就能找到。</p>
+  <button class="admin-link" id="adminLoginBtn">管理者登入</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="close-x" id="closeModal">✕</button>
+    <h3 id="modalTitle">新增卡片</h3>
+    <div class="field">
+      <label>貼文摘要 / 內容</label>
+      <textarea id="fExcerpt" placeholder="貼上或輸入貼文內容摘要…"></textarea>
+    </div>
+    <div class="field">
+      <label>發文日期</label>
+      <input id="fDate" type="date">
+    </div>
+    <div class="field">
+      <label>標籤（用逗號分隔，例如：閱讀, 隨筆）</label>
+      <input id="fTags" type="text" placeholder="閱讀, 隨筆">
+    </div>
+    <div class="field">
+      <label>Threads 連結</label>
+      <input id="fLink" type="url" placeholder="https://www.threads.net/@you/post/...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cancelBtn">取消</button>
+      <button class="btn-solid" id="saveBtn">收進抽屜</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="adminOverlay">
+  <div class="modal">
+    <button class="close-x" id="closeAdminModal">✕</button>
+    <h3 id="adminModalTitle">管理者登入</h3>
+    <div class="field" id="adminFieldPass">
+      <label>密碼</label>
+      <input id="fPass" type="password" placeholder="輸入管理密碼">
+    </div>
+    <div class="field" id="adminFieldConfirm" style="display:none;">
+      <label>再輸入一次以確認</label>
+      <input id="fPassConfirm" type="password" placeholder="再輸入一次">
+    </div>
+    <p id="adminMsg" style="font-size:12px; color:var(--stamp-red); margin:-6px 0 10px; display:none;"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="adminCancelBtn">取消</button>
+      <button class="btn-solid" id="adminSubmitBtn">登入</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="importOverlay">
+  <div class="modal" style="max-width:600px;">
+    <button class="close-x" id="closeImportModal">✕</button>
+    <h3>批次匯入文章</h3>
+    <div class="field">
+      <label>貼上 JSON 陣列（已預填 threads文章列表.xlsx 的 32 筆資料，可直接匯入，也可自行編輯或替換）</label>
+      <textarea id="importData" style="min-height:220px; font-family:'Noto Sans Mono', monospace; font-size:12.5px;"></textarea>
+    </div>
+    <p id="importMsg" style="font-size:12px; color:var(--stamp-red); margin:-6px 0 10px; display:none;"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="importCancelBtn">取消</button>
+      <button class="btn-solid" id="importSubmitBtn">匯入（依連結去重）</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'threads-posts';
+const ADMIN_KEY = 'threads-admin-pass';
+const PRESET_IMPORT = [{"excerpt": "小六的暑假都怎麼安排", "date": "2026-05-26", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DYy94yrktVq?xmt=AQG0McHdHqq9iPpe3bb2tTHV_mrFr2vzITSAZc53-nYN9w"}, {"excerpt": "小六升國中到底要先準備什麼？", "date": "2026-05-27", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DY1smdEklOq?xmt=AQG0McHdHqq9iPpe3bb2tTHV_mrFr2vzITSAZc53-nYN9w"}, {"excerpt": "小六升國中各科差異", "date": "2026-05-28", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DY39Gp7EZTv?xmt=AQG0McHdHqq9iPpe3bb2tTHV_mrFr2vzITSAZc53-nYN9w"}, {"excerpt": "小六升國中閱讀力", "date": "2026-05-29", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DY6myvEkW0Q?xmt=AQG0McHdHqq9iPpe3bb2tTHV_mrFr2vzITSAZc53-nYN9w"}, {"excerpt": "培養閱讀力", "date": "2026-06-01", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DZBtOd9kgte?xmt=AQG0McHdHqq9iPpe3bb2tTHV_mrFr2vzITSAZc53-nYN9w"}, {"excerpt": "長現在在想的 vs 孩子現在的狀態", "date": "2026-06-03", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DZE9CqREmwc?xmt=AQG0y52z8Lf6vjCLdtiRDgvq4T39TS-70VMuzk4km_tEUQ"}, {"excerpt": "國中會考-升國中", "date": "2026-06-04", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DZHSLNlEWE-?xmt=AQG0y52z8Lf6vjCLdtiRDgvq4T39TS-70VMuzk4km_tEUQ"}, {"excerpt": "落點前5件事", "date": "2026-06-07", "tags": ["國中會考"], "link": "https://www.threads.com/@bookish_knowhub/post/DZRxwGlEhmM?xmt=AQG0DJE5np5db4NP-wo9HyeQ839IZZQEoMox6Qv5xbhWAg"}, {"excerpt": "畢業典禮之後很重要的事", "date": "2026-06-07", "tags": ["國中會考"], "link": "https://www.threads.com/@bookish_knowhub/post/DZRsnKDEe5s?xmt=AQG0DJE5np5db4NP-wo9HyeQ839IZZQEoMox6Qv5xbhWAg"}, {"excerpt": "怎麼找到「適合自己的高中」？", "date": "2026-06-09", "tags": ["高中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DZXIPzlgVbv?xmt=AQG0_zO0kzw-MUGfKq0g4iaNLG1CLVGavn-p6uaB-OFPHw"}, {"excerpt": "小六升國中後，最容易讓孩子失去自信的 3 件事", "date": "2026-06-08", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DZUY3cykjVG?xmt=AQG0p0rZo-FIk4PqMKj99H6WN8T8oZxWeX5QucdJJDOplQ"}, {"excerpt": "自然｜光合作用 vs 呼吸作用", "date": "2026-06-10", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DZZjAYlETBR?xmt=AQG06jXA-DAHyw1OrqbHj_MihjX168eD8a-C50HgUWUO4w"}, {"excerpt": "國二升國三的暑假", "date": "2026-06-17", "tags": ["國中會考"], "link": "https://www.threads.com/@bookish_knowhub/post/DZq-49pgdxH?xmt=AQG08P06RBkJS2jjwE5Ig6lx9B-x8ud5J142N8tu5j2Kuw"}, {"excerpt": "字音字形準備", "date": "2026-06-29", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DaLEZcRgYub?xmt=AQG0tWYz5JruYvDUfKXVbNbbzrKCLD3s9lYNg7zf5-m9ag"}, {"excerpt": "有在考慮讓孩子報考私中嗎？", "date": "2026-06-30", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DaNHU-iEnMj?xmt=AQG0tWYz5JruYvDUfKXVbNbbzrKCLD3s9lYNg7zf5-m9ag"}, {"excerpt": "國學常識怎麼準備", "date": "2026-06-26", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DaCCJ8JASyV?xmt=AQG0sdjUsQjyyw8ShiKn8oumZtkvr5GkXdGiIit3F8huAA"}, {"excerpt": "國二升國三暑假讀書方向", "date": "2026-07-01", "tags": ["國中會考"], "link": "https://www.threads.com/@bookish_knowhub/post/DaPpyrWkitu?xmt=AQG0TVCfgTABu2dd2DND3I2JBWbk1iweHIbLTFZi-pJN6g"}, {"excerpt": "國二升國三安排時間", "date": "2026-07-03", "tags": ["國中會考"], "link": "https://www.threads.com/@bookish_knowhub/post/DaU37lHgU4b?xmt=AQG0If6LtyU8hl0cIxpN2d3VLCXBRvZHSXQ7jnGrIf10hg"}, {"excerpt": "私中跟國立國中的差異思考", "date": "2026-07-09", "tags": ["國中先修"], "link": "https://www.threads.com/@bookish_knowhub/post/DamhAgJEai8?xmt=AQG0madLtSepyqZwgsyEFIU-vK9O2OgPcOHNYr9h7ByhWA"}, {"excerpt": "讀文言文的方法1", "date": "2026-07-10", "tags": ["讀書方法"], "link": "https://www.threads.com/@bookish_knowhub/post/Dam26P7klaq?xmt=AQG0b42Pfz2j9I22UN4b8ylnUkuRFasy8TN-zdkBla1SSA"}, {"excerpt": "文言文最容易失分的，其實不是翻譯!", "date": "2026-07-16", "tags": ["讀書方法"], "link": "https://www.threads.com/@bookish_knowhub/post/Da2L3vCkQca?xmt=AQG0dw7KTGCmFYLzwOQ0tOzW6ODatCac6v3NSZB8oUDB3g"}, {"excerpt": "文言文-世外桃源", "date": "2026-07-17", "tags": ["讀書方法"], "link": "https://www.threads.com/@bookish_knowhub/post/Da4xiilkU2N?xmt=AQG0AxQEEywZUeAFLgyhD433nzCh2_n9l0ldQswv77o36A"}, {"excerpt": "國二升國三-找到自己的漏洞", "date": "2026-07-20", "tags": ["國中會考"], "link": "https://www.threads.com/@bookish_knowhub/post/DbApkx3ARAv?xmt=AQG0X2OGnHWvJot4FfnoBj237ZBzGJz9_p97I-HUA67pvA"}, {"excerpt": "國三的心情和節奏", "date": "2026-07-21", "tags": ["國中會考"], "link": "https://www.threads.com/@bookish_knowhub/post/DbC6tydkYJs?xmt=AQG0UNMPu1LJ2VI0BOkJY1VBSn4ReayM2BIXQxOProJ1EA"}, {"excerpt": "考試一直重複錯，怎麼避免", "date": "2026-07-22", "tags": ["讀書方法"], "link": "https://www.threads.com/@bookish_knowhub/post/DbF1q4-gbmk?xmt=AQG0eHvdWwVh2rOKvRledrEDLdhbOOwUApzeDwp3W_Ey6g"}, {"excerpt": "閱讀抓重點的方法", "date": "2026-07-23", "tags": ["讀書方法"], "link": "https://www.threads.com/@bookish_knowhub/post/DbIO89MEXCP?xmt=AQG0DQ4A4C4L78M0FYBMlq1TNKKpWwmtZ15GvQ7AY6dRUQ"}, {"excerpt": "閱讀能力3層次", "date": "2026-07-23", "tags": ["讀書方法"], "link": "https://www.threads.com/@bookish_knowhub/post/DbIRXU5AfjT?xmt=AQG0DQ4A4C4L78M0FYBMlq1TNKKpWwmtZ15GvQ7AY6dRUQ"}, {"excerpt": "暑假最常跑偏的努力", "date": "2026-07-29", "tags": ["讀書方法"], "link": "https://www.threads.com/share/H9v0p3pmn/"}, {"excerpt": "素養題閱讀技巧", "date": "2026-07-30", "tags": ["讀書方法"], "link": "https://www.threads.com/share/DuqncpbiA/"}, {"excerpt": "【國三了，還來得及嗎？】", "date": "2026-07-31", "tags": ["國中會考"], "link": "https://www.threads.com/share/HfTtLSQQQ/"}, {"excerpt": "錯題本真的有用嗎？", "date": "2026-08-04", "tags": ["讀書方法"], "link": "https://www.threads.com/share/DH-p27jIy/"}, {"excerpt": "素養題為什麼會錯?", "date": "2026-08-07", "tags": ["讀書方法"], "link": "https://www.threads.com/share/G7929PTdg/"}];
+let adminMode = false;
+let posts = [];
+let editingId = null;
+let activeTag = null;
+let searchQuery = '';
+
+async function loadPosts(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    posts = res ? JSON.parse(res.value) : [];
+  }catch(e){
+    posts = [];
+  }
+  render();
+}
+
+async function savePosts(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(posts), true);
+  }catch(e){
+    console.error('儲存失敗', e);
+  }
+}
+
+/* 簡易雜湊：只是避免密碼用明文存在共用儲存中，不是真正的加密安全機制 */
+function simpleHash(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){
+    h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return h.toString(36);
+}
+
+async function getAdminHash(){
+  try{
+    const res = await window.storage.get(ADMIN_KEY, true);
+    return res ? res.value : null;
+  }catch(e){
+    return null;
+  }
+}
+
+async function setAdminHash(hash){
+  await window.storage.set(ADMIN_KEY, hash, true);
+}
+
+function storageAvailable(){
+  return typeof window.storage !== 'undefined' && window.storage !== null;
+}
+
+function setAdminMode(on){
+  adminMode = on;
+  document.body.classList.toggle('admin-mode', on);
+}
+
+function fmtDate(d){
+  if(!d) return '未標日期';
+  const parts = d.split('-');
+  if(parts.length===3) return `${parts[0]}.${parts[1]}.${parts[2]}`;
+  return d;
+}
+
+function allTags(){
+  const s = new Set();
+  posts.forEach(p => (p.tags||[]).forEach(t => s.add(t)));
+  return Array.from(s).sort();
+}
+
+function renderTabs(){
+  const tags = allTags();
+  const row = document.getElementById('tabRow');
+  row.innerHTML = '';
+  if(tags.length === 0) return;
+  const allBtn = document.createElement('button');
+  allBtn.className = 'tab' + (activeTag===null ? ' active':'');
+  allBtn.textContent = '全部';
+  allBtn.onclick = () => { activeTag = null; render(); };
+  row.appendChild(allBtn);
+  tags.forEach(t=>{
+    const b = document.createElement('button');
+    b.className = 'tab' + (activeTag===t ? ' active':'');
+    b.textContent = t;
+    b.onclick = () => { activeTag = (activeTag===t ? null : t); render(); };
+    row.appendChild(b);
+  });
+}
+
+function filteredPosts(){
+  return posts
+    .filter(p => !activeTag || (p.tags||[]).includes(activeTag))
+    .filter(p => {
+      if(!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      const inExcerpt = (p.excerpt||'').toLowerCase().includes(q);
+      const inTags = (p.tags||[]).some(t=>t.toLowerCase().includes(q));
+      return inExcerpt || inTags;
+    })
+    .sort((a,b) => (b.date||'').localeCompare(a.date||''));
+}
+
+function render(){
+  renderTabs();
+  const grid = document.getElementById('grid');
+  const list = filteredPosts();
+  document.getElementById('countTag').textContent = `共 ${posts.length} 張卡片`;
+
+  if(list.length === 0){
+    grid.innerHTML = `<div class="empty">
+      <h2>抽屜是空的</h2>
+      <p>${posts.length===0 ? '按「新增卡片」放入你的第一篇貼文' : '沒有符合的卡片，換個關鍵字試試'}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  list.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-idx">No. ${String(posts.indexOf(p)+1).padStart(3,'0')}</div>
+      <p class="card-excerpt"></p>
+      <div class="card-tags">${(p.tags||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join('')}</div>
+      <div class="card-footer">
+        <span class="stamp">${fmtDate(p.date)}</span>
+        <div class="card-actions">
+          <button data-act="edit">編輯</button>
+          <button data-act="del">刪除</button>
+        </div>
+      </div>
+    `;
+    card.querySelector('.card-excerpt').textContent = p.excerpt || '（無內容摘要）';
+
+    card.addEventListener('click', (e)=>{
+      const act = e.target.getAttribute('data-act');
+      if(act === 'edit'){ e.stopPropagation(); openEdit(p.id); return; }
+      if(act === 'del'){ e.stopPropagation(); deletePost(p.id); return; }
+      if(p.link){ window.open(p.link, '_blank'); }
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function openModal(){ document.getElementById('overlay').classList.add('open'); }
+function closeModalFn(){
+  document.getElementById('overlay').classList.remove('open');
+  editingId = null;
+  document.getElementById('fExcerpt').value = '';
+  document.getElementById('fDate').value = '';
+  document.getElementById('fTags').value = '';
+  document.getElementById('fLink').value = '';
+}
+
+function openAdd(){
+  if(!adminMode) return;
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '新增卡片';
+  openModal();
+}
+
+function openEdit(id){
+  if(!adminMode) return;
+  const p = posts.find(x=>x.id===id);
+  if(!p) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '編輯卡片';
+  document.getElementById('fExcerpt').value = p.excerpt || '';
+  document.getElementById('fDate').value = p.date || '';
+  document.getElementById('fTags').value = (p.tags||[]).join(', ');
+  document.getElementById('fLink').value = p.link || '';
+  openModal();
+}
+
+async function deletePost(id){
+  if(!adminMode) return;
+  if(!confirm('確定要從抽屜移除這張卡片嗎？')) return;
+  posts = posts.filter(p=>p.id!==id);
+  await savePosts();
+  render();
+}
+
+async function saveFromModal(){
+  const excerpt = document.getElementById('fExcerpt').value.trim();
+  const date = document.getElementById('fDate').value;
+  const tags = document.getElementById('fTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const link = document.getElementById('fLink').value.trim();
+
+  if(!excerpt){
+    alert('請至少填寫貼文摘要 / 內容');
+    return;
+  }
+
+  if(editingId){
+    const p = posts.find(x=>x.id===editingId);
+    Object.assign(p, {excerpt, date, tags, link});
+  }else{
+    posts.push({
+      id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+      excerpt, date, tags, link
+    });
+  }
+  await savePosts();
+  closeModalFn();
+  render();
+}
+
+document.getElementById('openAdd').onclick = openAdd;
+document.getElementById('closeModal').onclick = closeModalFn;
+document.getElementById('cancelBtn').onclick = closeModalFn;
+document.getElementById('saveBtn').onclick = saveFromModal;
+document.getElementById('overlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'overlay') closeModalFn();
+});
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  searchQuery = e.target.value;
+  render();
+});
+
+/* ---------- 管理者登入 / 設定密碼 ---------- */
+const adminOverlay = document.getElementById('adminOverlay');
+const adminMsg = document.getElementById('adminMsg');
+const fPass = document.getElementById('fPass');
+const fPassConfirm = document.getElementById('fPassConfirm');
+const adminFieldConfirm = document.getElementById('adminFieldConfirm');
+
+function showAdminMsg(text){
+  adminMsg.textContent = text;
+  adminMsg.style.display = 'block';
+}
+
+async function openAdminModal(){
+  adminMsg.style.display = 'none';
+  fPass.value = '';
+  fPassConfirm.value = '';
+  const existing = await getAdminHash();
+  if(existing){
+    document.getElementById('adminModalTitle').textContent = '管理者登入';
+    adminFieldConfirm.style.display = 'none';
+    document.getElementById('adminSubmitBtn').textContent = '登入';
+  }else{
+    document.getElementById('adminModalTitle').textContent = '第一次使用：設定管理密碼';
+    adminFieldConfirm.style.display = 'block';
+    document.getElementById('adminSubmitBtn').textContent = '設定並登入';
+  }
+  adminOverlay.classList.add('open');
+}
+
+function closeAdminModal(){
+  adminOverlay.classList.remove('open');
+}
+
+async function submitAdmin(){
+  if(!storageAvailable()){
+    showAdminMsg('⚠️ 目前的環境沒有儲存功能，請在 Claude 對話中的 Artifact 預覽視窗開啟這個頁面');
+    return;
+  }
+  try{
+    const existing = await getAdminHash();
+    if(existing){
+      if(simpleHash(fPass.value) === existing){
+        setAdminMode(true);
+        closeAdminModal();
+        render();
+      }else{
+        showAdminMsg('密碼不正確，請再試一次');
+      }
+    }else{
+      if(!fPass.value){
+        showAdminMsg('請輸入密碼');
+        return;
+      }
+      if(fPass.value !== fPassConfirm.value){
+        showAdminMsg('兩次輸入的密碼不一致');
+        return;
+      }
+      await setAdminHash(simpleHash(fPass.value));
+      setAdminMode(true);
+      closeAdminModal();
+      render();
+    }
+  }catch(err){
+    showAdminMsg('⚠️ 儲存空間連線失敗，請稍後再試一次（' + (err && err.message ? err.message : '未知錯誤') + '）');
+  }
+}
+
+document.getElementById('adminLoginBtn').onclick = openAdminModal;
+document.getElementById('closeAdminModal').onclick = closeAdminModal;
+document.getElementById('adminCancelBtn').onclick = closeAdminModal;
+document.getElementById('adminSubmitBtn').onclick = submitAdmin;
+document.getElementById('adminLogout').onclick = ()=>{ setAdminMode(false); render(); };
+adminOverlay.addEventListener('click', (e)=>{ if(e.target.id==='adminOverlay') closeAdminModal(); });
+
+/* ---------- 批次匯入 ---------- */
+const importOverlay = document.getElementById('importOverlay');
+const importData = document.getElementById('importData');
+const importMsg = document.getElementById('importMsg');
+
+function openImportModal(){
+  if(!adminMode) return;
+  importMsg.style.display = 'none';
+  importData.value = JSON.stringify(PRESET_IMPORT, null, 2);
+  importOverlay.classList.add('open');
+}
+function closeImportModal(){ importOverlay.classList.remove('open'); }
+
+async function submitImport(){
+  let incoming;
+  try{
+    incoming = JSON.parse(importData.value);
+    if(!Array.isArray(incoming)) throw new Error('資料必須是陣列格式');
+  }catch(e){
+    importMsg.textContent = '⚠️ JSON 格式錯誤：' + e.message;
+    importMsg.style.display = 'block';
+    return;
+  }
+
+  const existingLinks = new Set(posts.map(p => p.link));
+  let added = 0, skipped = 0;
+  incoming.forEach(item=>{
+    const link = (item.link || '').trim();
+    if(!item.excerpt || !link){ skipped++; return; }
+    if(existingLinks.has(link)){ skipped++; return; }
+    posts.push({
+      id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+      excerpt: String(item.excerpt).trim(),
+      date: item.date || '',
+      tags: Array.isArray(item.tags) ? item.tags : String(item.tags||'').split(',').map(t=>t.trim()).filter(Boolean),
+      link
+    });
+    existingLinks.add(link);
+    added++;
+  });
+
+  await savePosts();
+  closeImportModal();
+  render();
+  alert(`匯入完成：新增 ${added} 篇，略過（重複連結或缺資料）${skipped} 篇`);
+}
+
+document.getElementById('openImport').onclick = openImportModal;
+document.getElementById('closeImportModal').onclick = closeImportModal;
+document.getElementById('importCancelBtn').onclick = closeImportModal;
+document.getElementById('importSubmitBtn').onclick = submitImport;
+importOverlay.addEventListener('click', (e)=>{ if(e.target.id==='importOverlay') closeImportModal(); });
+
+loadPosts();
+</script>
+</body>
+</html>
